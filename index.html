@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lerncheck 1.3 & 1.4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: Stationen-Leiste links (mobil oben als Chips), rechts ein Arbeitsblatt pro Station; gelber Textmarker als Erkennungszeichen wie auf den Arbeitsblättern */
+:root{
+  --paper:#F4F6F3; --sheet:#FFFFFF; --ink:#1B2430; --muted:#5A6472; --line:#D6DBD4; --soft:#EBEEEA;
+  --marker:#FFE14D; --marker-ink:#1B2430; --pen:#1F5FA8; --pen-soft:#E3ECF8;
+  --good:#1D8648; --good-soft:#E2F3E8; --bad:#C42B2B; --bad-soft:#FBE6E4;
+  --c13:#2F6FB3; --c14:#2E8754;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#12171D; --sheet:#1A2129; --ink:#E6EAEE; --muted:#9AA5B2; --line:#2E3843; --soft:#222B34;
+  --marker:#E9C93B; --marker-ink:#12171D; --pen:#7FB0EC; --pen-soft:#1F2D3D;
+  --good:#5CC98A; --good-soft:#173326; --bad:#F07A72; --bad-soft:#3A1E1D;
+  --c13:#7FB0EC; --c14:#6FCB98; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#12171D; --sheet:#1A2129; --ink:#E6EAEE; --muted:#9AA5B2; --line:#2E3843; --soft:#222B34;
+  --marker:#E9C93B; --marker-ink:#12171D; --pen:#7FB0EC; --pen-soft:#1F2D3D;
+  --good:#5CC98A; --good-soft:#173326; --bad:#F07A72; --bad-soft:#3A1E1D;
+  --c13:#7FB0EC; --c14:#6FCB98; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;padding-inline:16px;padding-block:20px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:24px}
+@media(min-width:920px){.wrap{grid-template-columns:270px minmax(0,1fr);align-items:start}}
+header.top{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:end;justify-content:space-between;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+.kicker{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,4.4vw,44px);line-height:1.05;margin:4px 0 0;text-wrap:balance;letter-spacing:-.01em}
+.hl{background:linear-gradient(transparent 58%,var(--marker) 58%,var(--marker) 92%,transparent 92%);padding:0 .08em}
+.score{display:grid;gap:6px;min-width:240px}
+.score .num{font-family:var(--f-display);font-weight:700;font-size:26px;font-variant-numeric:tabular-nums}
+.score .num small{font-size:15px;color:var(--muted);font-weight:500}
+.bar{height:8px;background:var(--soft);border-radius:4px;overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.bar .b13{background:var(--c13)} .bar .b14{background:var(--c14)}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--dot)}
+
+nav.stations{min-width:0}
+@media(min-width:920px){nav.stations{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}}
+.navlist{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;list-style:none;margin:0;padding-left:0}
+@media(min-width:920px){.navlist{flex-direction:column;overflow:visible}}
+.navbtn{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:34px 1fr;gap:2px 10px;align-items:center;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--sheet);min-width:210px;width:100%}
+.navbtn:hover{border-color:var(--muted)}
+.navbtn:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+.navbtn[aria-current="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.navbtn .lt{grid-row:span 2;font-family:var(--f-display);font-weight:800;font-size:20px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--sheet);background:var(--ch)}
+.navbtn .nm{font-weight:700;font-size:14.5px;line-height:1.25}
+.navbtn .st{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.navbtn.done .st{color:var(--good)}
+
+main{min-width:0}
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:6px;padding:clamp(18px,3.4vw,40px);display:grid;gap:28px}
+.sheet-head{display:grid;gap:8px}
+.chap{font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--ch)}
+h2{font-family:var(--f-display);font-weight:800;font-size:clamp(24px,3.2vw,32px);line-height:1.12;margin:0;text-wrap:balance}
+.lead{max-width:68ch;margin:0;color:var(--muted);font-size:17px}
+details.recap{border:1px dashed var(--line);border-radius:6px;padding:10px 14px;max-width:72ch}
+details.recap summary{cursor:pointer;font-weight:700}
+details.recap ul{margin:8px 0 2px;padding-left:20px}
+
+.material{border-top:2px solid var(--ink);padding-top:14px;display:grid;gap:8px;max-width:76ch}
+.material .mh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.mtag{font-family:var(--f-mono);font-weight:600;font-size:13px;border:1.5px solid var(--ink);padding:0 6px;border-radius:3px}
+.material h3{font-family:var(--f-display);font-weight:700;font-size:20px;margin:0;line-height:1.25}
+.material p{margin:0}
+.material ul{margin:0;padding-left:20px}
+.src{font-size:12.5px;font-style:italic;color:var(--muted);overflow-wrap:anywhere}
+.src a{color:inherit}
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0}
+.fact{border:1px solid var(--line);border-radius:6px;padding:8px 12px;min-width:120px;flex:1 1 140px}
+.fact b{display:block;font-family:var(--f-display);font-size:22px;font-variant-numeric:tabular-nums;line-height:1.1}
+.fact span{font-size:13px;color:var(--muted)}
+
+.task{border:1px solid var(--line);border-radius:8px;padding:18px clamp(14px,2.4vw,24px);display:grid;gap:14px}
+.task.solved{border-color:var(--muted)}
+.thead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.tno{font-family:var(--f-display);font-weight:800;font-size:18px}
+.aa{font-weight:700;text-decoration:underline;text-underline-offset:3px;background:var(--marker);color:var(--marker-ink);padding:0 4px}
+.chip{font-family:var(--f-mono);font-size:11.5px;font-weight:600;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.chip.afb3{border-color:var(--ink);color:var(--ink)}
+.pts{margin-left:auto;font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.task.solved .pts{color:var(--ink);font-weight:600}
+.prompt{margin:0;max-width:72ch;font-size:16.5px}
+.rows{display:grid;gap:10px}
+.row{display:grid;gap:8px 14px;align-items:center;padding:10px 12px;border-radius:6px;background:var(--soft)}
+@media(min-width:640px){.row.r2{grid-template-columns:minmax(0,1fr) 200px}.row.r3{grid-template-columns:minmax(0,1fr) 170px 170px}}
+.row .it{min-width:0}
+.row label.sl{display:grid;gap:2px;font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+select{font:inherit;font-size:15px;padding:7px 8px;border-radius:6px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);width:100%}
+select:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+.row.ok{background:var(--good-soft)} .row.no{background:var(--bad-soft)}
+.why{grid-column:1/-1;font-size:14px;color:var(--ink)}
+.why b.c{color:var(--good)}
+.opts{display:grid;gap:8px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;padding:10px 12px;border-radius:6px;border:1px solid var(--line);background:var(--sheet)}
+.opt:hover{border-color:var(--muted)}
+.opt .box{width:22px;height:22px;border:2px solid var(--muted);display:grid;place-items:center;font-size:13px;font-weight:700;margin-top:1px}
+.opt.radio .box{border-radius:50%}
+.opt.multi .box{border-radius:4px}
+.opt[aria-pressed="true"]{border-color:var(--pen);background:var(--pen-soft)}
+.opt[aria-pressed="true"] .box{border-color:var(--pen);background:var(--pen);color:var(--sheet)}
+.opt[aria-pressed="true"].radio .box::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--sheet)}
+.opt[aria-pressed="true"].multi .box::after{content:"✓"}
+.opt.is-right{border-color:var(--good);background:var(--good-soft)}
+.opt.is-wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.is-missed{border-color:var(--good);border-style:dashed}
+.opt[disabled]{cursor:default}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.segb{all:unset;cursor:pointer;font-size:14px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--sheet)}
+.segb[aria-pressed="true"]{border-color:var(--pen);background:var(--pen);color:var(--sheet)}
+.segb[disabled]{cursor:default}
+textarea{font:inherit;width:100%;min-height:180px;padding:12px;border-radius:6px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);resize:vertical}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{all:unset;cursor:pointer;font-weight:700;font-size:15px;padding:9px 16px;border-radius:6px;background:var(--ink);color:var(--sheet)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:hover{opacity:.9}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.hint{font-size:14px;color:var(--bad)}
+.feedback{border-radius:6px;padding:12px 14px;display:grid;gap:6px;font-size:15px;max-width:76ch}
+.feedback.good{background:var(--good-soft)} .feedback.mid{background:var(--soft)} .feedback.low{background:var(--bad-soft)}
+.feedback .verdict{font-weight:700}
+.model{border:1px solid var(--line);border-radius:6px;padding:14px;display:grid;gap:10px;max-width:76ch}
+.model h4{margin:0;font-family:var(--f-display);font-size:17px}
+.model ul{margin:0;padding-left:20px}
+.crit{display:grid;gap:8px}
+.crit label{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;cursor:pointer;padding:8px 10px;border-radius:6px;background:var(--soft)}
+.crit input{width:18px;height:18px;margin-top:3px;accent-color:var(--good)}
+.station-foot{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:18px}
+/* Auswertung */
+.res-grid{display:grid;gap:16px}
+@media(min-width:700px){.res-grid{grid-template-columns:1fr 1fr}}
+.res{border:1px solid var(--line);border-radius:8px;padding:18px;display:grid;gap:10px}
+.res .big{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:1;font-variant-numeric:tabular-nums;color:var(--ch)}
+.res .lvl{font-weight:700}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:460px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.srcs{display:grid;gap:4px;font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.srcs a{color:inherit}
+.confirm{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:14px}
+@media (prefers-reduced-motion:no-preference){.feedback,.model{animation:in .25s ease-out}@keyframes in{from{transform:translateY(4px)}to{transform:none}}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Wirtschaft und Recht · Q12 (gA) · Selbsttest</div>
+      <h1>Lerncheck <span class="hl">1.3 &amp; 1.4</span></h1>
+      <div class="lead" style="margin-top:6px">Langfristige Unternehmensstrategien · Kundeninteressen in der Beschaffung</div>
+    </div>
+    <div class="score" aria-live="polite">
+      <div class="num" id="totNum">0 <small>/ 0 Punkte</small></div>
+      <div class="bar" id="totBar"><i class="b13" style="width:0"></i><i class="b14" style="width:0"></i></div>
+      <div class="legend"><span style="--dot:var(--c13)">Kapitel 1.3</span><span style="--dot:var(--c14)">Kapitel 1.4</span><span id="totDone">0 von 0 Aufgaben erledigt</span></div>
+    </div>
+  </header>
+  <nav class="stations" aria-label="Stationen"><ul class="navlist" id="nav"></ul></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+const S = [
+/* ---------------- STATION A ---------------- */
+{id:"A", ch:"1.3", title:"Ziele und Zielbeziehungen",
+ lead:"Unternehmen verfolgen mehrere Ziele gleichzeitig. Entscheidend ist, wie diese Ziele zusammenhängen und ob sich das Bild ändert, wenn man über das nächste Geschäftsjahr hinausdenkt.",
+ recap:`<ul><li><b>komplementär</b>: Das Erreichen von Ziel A fördert Ziel B.</li><li><b>konkurrierend</b>: Das Erreichen von Ziel A behindert Ziel B (Zielkonflikt).</li><li><b>indifferent</b>: Die Ziele beeinflussen sich nicht.</li><li><b>Zeitperspektive</b>: Viele Ziele konkurrieren kurzfristig (Kosten fallen sofort an) und ergänzen sich langfristig (Image, Versorgungssicherheit, Kundenbindung).</li></ul>`,
+ mat:[],
+ tasks:[
+ {id:"A1",type:"assign",afb:"I",prompt:"Ordne jedes Unternehmensziel der passenden Zielkategorie zu.",
+  cats:["ökonomisch","ökologisch","ethisch-sozial"],
+  items:[
+   {t:"Eine Umsatzrentabilität von 8 % erreichen",a:0},
+   {t:"Die CO₂-Emissionen der Produktion bis 2030 halbieren",a:1},
+   {t:"Kostenlose Gesundheitskurse für alle Beschäftigten anbieten",a:2},
+   {t:"Kinderarbeit bei Zulieferern ausschließen",a:2},
+   {t:"Den Marktanteil in Österreich ausbauen",a:0},
+   {t:"Alle Verpackungen recyclingfähig gestalten",a:1},
+   {t:"Existenzsichernde Löhne für Plantagenarbeiter in Ecuador sichern",a:2}],
+  expl:"Ethisch-soziale Ziele betreffen die Verantwortung gegenüber Menschen: gegenüber den eigenen Beschäftigten (z. B. Gesundheit, faire Bezahlung) ebenso wie gegenüber Menschen außerhalb des Unternehmens, etwa in der Lieferkette."},
+ {id:"A2",type:"shortlong",afb:"II",prompt:"Bestimme die Zielbeziehung jeweils kurzfristig und langfristig.",
+  opts:["komplementär","konkurrierend","indifferent"],
+  items:[
+   {t:"<b>Ritter Sport</b> bezieht seit 2018 ausschließlich zertifiziert nachhaltigen Kakao.<br>Ziel 1: Gewinn steigern · Ziel 2: faire Bedingungen im Kakaoanbau sichern",k:1,l:0,why:"Zertifizierungsaufschläge und Programmkosten (rund 7 Mio. € pro Jahr) drücken zunächst den Gewinn. Langfristig sichern sie Qualität, Liefermengen und das Markenimage, also auch den Gewinn."},
+   {t:"Eine Spedition schult ihre Fahrer in spritsparender Fahrweise.<br>Ziel 1: Kraftstoffkosten senken · Ziel 2: CO₂-Ausstoß senken",k:0,l:0,why:"Weniger Diesel bedeutet sofort und dauerhaft weniger Kosten und weniger CO₂."},
+   {t:"Ein Möbelhersteller sponsert den örtlichen Sportverein.<br>Ziel 1: Lagerkosten senken · Ziel 2: gesellschaftliches Engagement zeigen",k:2,l:2,why:"Das Sponsoring hat keinen Einfluss auf die Lagerkosten und umgekehrt."},
+   {t:"Ein Autohersteller verschiebt teure E-Plattformen und baut länger Verbrenner.<br>Ziel 1: Rentabilität sichern · Ziel 2: CO₂-Flottengrenzwerte der EU einhalten",k:1,l:1,why:"Mehr Verbrenner verschlechtern die CO₂-Bilanz der Flotte, kurz- wie langfristig. Der Rentabilitätsgewinn wird mit einem höheren Risiko bei den Klimazielen erkauft."}]},
+ {id:"A3",type:"mc",afb:"I",prompt:"Welche Aussage beschreibt den <b>Shareholder-Value-Ansatz</b> zutreffend?",
+  opts:["Das Unternehmen gewichtet die Interessen aller Anspruchsgruppen gleich.","Das Unternehmen verzichtet auf Gewinne zugunsten des Gemeinwohls.","Das Unternehmen richtet sich vorrangig daran aus, den Wert für die Eigentümer (Aktienkurs, Dividende) zu steigern.","Das Unternehmen orientiert sich ausschließlich an den Wünschen der Kunden."],a:2,
+  expl:"Der Shareholder-Ansatz stellt die Eigentümer (Shareholder) in den Mittelpunkt. Der Stakeholder-Ansatz berücksichtigt dagegen die Interessen aller Anspruchsgruppen, etwa Beschäftigte, Kunden, Lieferanten und Gesellschaft."},
+ {id:"A4",type:"mc",afb:"III",pts:2,prompt:"Ein Geschäftsführer sagt: „Nachhaltigkeit ist Luxus – wir müssen erst Gewinn machen.“ Welche Beurteilung ist am besten begründet?",
+  opts:["Er hat recht: Ökonomische und ökologische Ziele sind grundsätzlich konkurrierend.","Er hat unrecht: Nachhaltigkeit steigert immer sofort den Gewinn.","Die Frage ist unerheblich, weil Gesetze alle Nachhaltigkeitsfragen regeln.","Er greift zu kurz: Kurzfristig kann ein Zielkonflikt bestehen, langfristig sichert Nachhaltigkeit oft Rohstoffe, Kunden und Fachkräfte und damit auch Gewinn."],a:3,
+  expl:"Die Beziehung hängt vom Zeithorizont ab. Absolute Aussagen („grundsätzlich“, „immer“) sind in Beurteilungsaufgaben fast immer zu einfach."}
+ ]},
+/* ---------------- STATION B ---------------- */
+{id:"B", ch:"1.3", title:"Stakeholder und Interessenkonflikte",
+ lead:"Wer etwas von einem Unternehmen erwartet, ist ein Stakeholder. Langfristige Strategien scheitern oft daran, dass eine wichtige Anspruchsgruppe übersehen wurde.",
+ mat:[{tag:"M1",head:"Streit um die Berichtspflicht im Lieferkettengesetz",
+  body:`<p>Das Bundeskabinett hat im September 2025 einen Gesetzentwurf beschlossen, der die jährliche Berichtspflicht des Lieferkettensorgfaltspflichtengesetzes (LkSG) streichen soll. Die Sorgfaltspflichten selbst sollen bleiben, Bußgelder aber nur noch bei schweren Verstößen drohen. Der Bundestag beriet den Entwurf im Januar 2026 in erster Lesung.</p><p>Wirtschaftsverbände wie die Vereinigung der Bayerischen Wirtschaft fordern sogar die vollständige Abschaffung des Gesetzes. Die Initiative Lieferkettengesetz, ein Bündnis zivilgesellschaftlicher Organisationen, warnt dagegen, damit gingen wichtige Hebel gegen Menschenrechtsverletzungen und Umweltzerstörung verloren.</p>`,
+  src:[["der-betrieb.de, 05.09.2025","https://der-betrieb.de/meldungen/bundesregierung-beschliesst-aenderung-des-lieferkettengesetzes/"],["bundestag.de, 16.01.2026","https://www.bundestag.de/dokumente/textarchiv/2026/kw03-de-lieferketten-1136308"],["logistik-heute.de","https://logistik-heute.de/en/news/supply-chain-act-government-drops-reporting-obligations-225697.html"]]}],
+ tasks:[
+ {id:"B1",type:"assign",afb:"I",prompt:"Ordne jedes Interesse der Stakeholder-Gruppe zu, die es typischerweise vertritt.",
+  cats:["Eigentümer","Beschäftigte","Kunden","Lieferanten","Staat","Gesellschaft / NGOs"],
+  items:[
+   {t:"Hohe Dividende und steigender Aktienkurs",a:0},
+   {t:"Sichere Arbeitsplätze und faire Bezahlung",a:1},
+   {t:"Gutes Preis-Leistungs-Verhältnis und transparente Herkunft",a:2},
+   {t:"Langfristige Abnahmeverträge und pünktliche Zahlung",a:3},
+   {t:"Steuereinnahmen und Einhaltung der Gesetze",a:4},
+   {t:"Schutz von Regenwald und Menschenrechten",a:5}]},
+ {id:"B2",type:"multi",afb:"II",pts:2,prompt:"Porsche will bis 2029 in der Region Stuttgart rund 1.900 Stellen sozialverträglich abbauen. Welche <b>zwei</b> Gruppen stehen sich bei dieser Entscheidung am direktesten gegenüber?",
+  opts:["Umweltverbände, die strengere CO₂-Grenzwerte fordern","Aktionäre, die eine Rückkehr zu höheren Gewinnen erwarten","Kakaobauern in Westafrika","Beschäftigte, die sichere Arbeitsplätze wollen"],a:[1,3],
+  expl:"Der Stellenabbau senkt Kosten und soll die Rendite verbessern (Interesse der Eigentümer). Für die Beschäftigten bedeutet er Unsicherheit. Umweltverbände sind vom Stellenabbau nicht direkt betroffen."},
+ {id:"B3",type:"mc",afb:"II",prompt:"Analysiere M1: Welche Aussage beschreibt die Interessenlage am treffendsten?",
+  opts:["Beide Seiten wollen die Berichtspflicht abschaffen, nur aus unterschiedlichen Gründen.","Wirtschaftsverbände wollen Bürokratiekosten senken und die Wettbewerbsfähigkeit stärken; die NGOs sehen in der Berichtspflicht ein Mittel, um Menschenrechte in der Lieferkette durchzusetzen.","Die NGOs vertreten in erster Linie die Interessen deutscher Kunden.","Der Staat hat an der Frage kein Interesse, weil das LkSG nur Unternehmen betrifft."],a:1,
+  expl:"Hier treffen ökonomische Interessen (Kosten, Wettbewerb) auf ethische Interessen (Menschenrechte, Umwelt). Der Staat muss als eigener Stakeholder zwischen beiden abwägen."},
+ {id:"B4",type:"mc",afb:"III",pts:2,prompt:"Ein großer Schokoladenhersteller überlegt, nach Wegfall der Berichtspflicht seinen Nachhaltigkeitsbericht einzustellen. Welche Beurteilung berücksichtigt die Stakeholder am umfassendsten?",
+  opts:["Sinnvoll, weil gesetzliche Pflichten der einzige Grund für Transparenz sind.","Unproblematisch, weil Kunden Nachhaltigkeitsberichte ohnehin nicht lesen.","Riskant, weil Kunden, Handelspartner und NGOs weiterhin Transparenz erwarten und ein Rückzug als Greenwashing-Verdacht gedeutet werden kann – trotz eingesparter Kosten.","Verboten, weil die Berichtspflicht nach dem Entwurf weiter gilt."],a:2,
+  expl:"Die gesparten Kosten sind ein kurzfristiger Vorteil. Langfristig hängen Reputation und Kundenvertrauen davon ab, ob ein Unternehmen seine Lieferkette offenlegt. Laut Entwurf entfällt die Berichtspflicht, die Sorgfaltspflichten bleiben aber."}
+ ]},
+/* ---------------- STATION C ---------------- */
+{id:"C", ch:"1.3", title:"Strategien im Praxistest: Porsche und Vaude",
+ lead:"Zwei Unternehmen, zwei Wege: Porsche korrigiert seine Elektrostrategie unter hohen Kosten, Vaude baut seit Jahren konsequent auf Nachhaltigkeit. Was lässt sich daraus über langfristige Strategien lernen?",
+ mat:[
+ {tag:"M1",head:"Porsche: Kehrtwende vom Elektroziel",
+  body:`<p>Porsche wollte 2030 rund 80 % seiner Fahrzeuge als reine Elektroautos verkaufen. 2025 verkündete das Unternehmen eine Neuausrichtung: Verbrenner und Plug-in-Hybride sollen bis weit in die 2030er-Jahre angeboten werden, eine geplante E-Plattform wurde verschoben, die eigene Batteriefertigung gestoppt. Begründet wurde dies mit „Marktrealitäten und Kundenbedürfnissen“.</p>
+  <div class="facts"><div class="fact"><b>3,1 Mrd. €</b><span>erwartete Sonderkosten der Neuausrichtung 2025</span></div><div class="fact"><b>−91,4 %</b><span>Gewinn nach Steuern 2025 (310 Mio. €)</span></div><div class="fact"><b>36,3 Mrd. €</b><span>Umsatz 2025, fast 10 % weniger</span></div><div class="fact"><b>1.900</b><span>Stellen sollen bis 2029 wegfallen</span></div></div>
+  <p>Zusätzlich belasteten das schwache China-Geschäft und US-Importzölle das Ergebnis. Seit Januar 2026 führt Michael Leiters das Unternehmen und kündigt weitere Einsparungen an.</p>`,
+  src:[["blick.ch","https://www.blick.ch/auto/porsche-tief-in-der-krise-elektroautos-muessen-warten-id21254762.html"],["orf.at","https://orf.at/stories/3423467/"],["ingenieur.de, 25.10.2025","https://www.ingenieur.de/wirtschaft/gewinneinbruch-bei-porsche-was-jetzt-gefragt-ist/"],["autohaus.de, 24.10.2025","https://www.autohaus.de/nachrichten/autohersteller/porsche-meldet-95-9-prozent-gewinneinbruch-3726590"]]},
+ {tag:"M2",head:"Vaude: Nachhaltigkeit als „grüner Faden“",
+  body:`<p>Der Outdoor-Ausrüster Vaude aus Tettnang am Bodensee (rund 500 Beschäftigte) verfolgt unter Geschäftsführerin Antje von Dewitz eine Nachhaltigkeitsstrategie, die alle Unternehmensbereiche umfasst. Als erstes Unternehmen der Outdoor-Branche veröffentlichte Vaude eine geprüfte <b>Gemeinwohl-Bilanz</b>. Sie bewertet unternehmerischen Erfolg nicht in erster Linie am Finanzgewinn, sondern am Beitrag zum Gemeinwohl.</p><p>Das Umsatzwachstum liegt laut Unternehmen seit Jahren über dem Branchendurchschnitt. Mit der Vaude Academy berät die Firma inzwischen andere Unternehmen beim Aufbau einer eigenen Nachhaltigkeitsstrategie.</p>`,
+  src:[["pedelec-elektro-fahrrad.de","https://pedelec-elektro-fahrrad.de/news/vaude-erstellt-gemeinwohl-bilanz/"],["horizont.net","https://www.horizont.net/medien/nachrichten/horizont-kongress-wie-vaude-chefin-antje-von-dewitz-ihre-vision-verwirklicht-hat-190967"],["radfahren.de","https://www.radfahren.de/?p=25355"]]}],
+ tasks:[
+ {id:"C1",type:"multi",afb:"I",pts:2,prompt:"Nenne die Gründe, die laut M1 zum Gewinneinbruch 2025 geführt haben. Markiere <b>alle</b> zutreffenden.",
+  opts:["US-Importzölle","Gestiegene Kakaopreise","Sonderkosten durch den Strategiewechsel","Schwaches Geschäft in China"],a:[0,2,3],
+  expl:"M1 nennt drei Ursachen: Neuausrichtung, Zölle, China."},
+ {id:"C2",type:"mc",afb:"II",prompt:"Welche Aussage beschreibt die Zielbeziehung bei Porsche 2025 am treffendsten?",
+  opts:["Die schwache Nachfrage nach E-Autos machte das Elektroziel zum Konkurrenten des Gewinnziels; die Rückkehr zum Verbrenner soll die Rentabilität sichern, kostet aber zunächst selbst Milliarden.","Ökologisches Ziel (Elektrifizierung) und Gewinnziel waren komplementär, deshalb stieg der Gewinn.","Gewinnziel und Elektroziel waren indifferent, der Gewinneinbruch hatte nur äußere Ursachen.","Porsche hat seine ökonomischen Ziele zugunsten ökologischer Ziele aufgegeben."],a:0,
+  expl:"Der Fall zeigt, dass auch eine Korrektur der Strategie kurzfristig Kosten verursacht (Sonderkosten), die erst langfristig wieder eingespielt werden sollen."},
+ {id:"C3",type:"multi",afb:"III",pts:2,prompt:"Welche Argumente sprechen dafür, dass die Kehrtwende <b>langfristig riskant</b> sein kann? Markiere alle zutreffenden.",
+  opts:["Die Kundengruppe von Porsche fragt derzeit stark Verbrenner nach.","Porsche könnte technologisch hinter Wettbewerber zurückfallen, die weiter in E-Mobilität investieren.","Der Zickzackkurs kann die Glaubwürdigkeit bei Kunden und Investoren beschädigen.","Strengere CO₂-Vorgaben der EU können Verbrenner künftig teurer machen."],a:[1,2,3],
+  expl:"Die erste Aussage ist ein Argument <i>für</i> die Kehrtwende, nicht dagegen. Eine gute Beurteilung wägt beide Seiten ab."},
+ {id:"C4",type:"mc",afb:"I",prompt:"Was misst eine Gemeinwohl-Bilanz in erster Linie?",
+  opts:["Ausschließlich den Jahresgewinn","Die Zahl der verkauften Produkte","Die Höhe der gezahlten Steuern","Den Beitrag eines Unternehmens zum Gemeinwohl, also ökologische, soziale und ethische Wirkungen"],a:3,
+  expl:"Die Gemeinwohl-Bilanz ergänzt die Finanzbilanz und macht nicht-finanzielle Ziele messbar."},
+ {id:"C5",type:"mc",afb:"III",pts:2,prompt:"Vergleiche M1 und M2. Welche Schlussfolgerung ist am besten begründet?",
+  opts:["Beide Fälle beweisen, dass Nachhaltigkeit immer zu höherem Gewinn führt.","Vaude hat Nachhaltigkeit im Kern seiner Strategie verankert und konsequent umgesetzt; Porsche musste ein Nachhaltigkeitsziel teuer korrigieren, das nicht zur Nachfrage seiner Kundengruppe passte. Langfristige Strategien tragen nur, wenn sie zu Kunden und Marktumfeld passen.","Vaude ist erfolgreich, weil es keine ökonomischen Ziele verfolgt.","Porsche handelt unethisch, Vaude ethisch; wirtschaftlich spielt das keine Rolle."],a:1,
+  expl:"Vaude verfolgt sehr wohl ökonomische Ziele (Wachstum über Branchenschnitt). Entscheidend ist die Passung von Strategie, Kundengruppe und Umsetzung."}
+ ]},
+/* ---------------- STATION D ---------------- */
+{id:"D", ch:"1.4", title:"Beschaffung: Ritter Sport und der Kakaoschock",
+ lead:"Kakao ist der wichtigste Rohstoff jeder Schokolade. Wie ein Hersteller ihn einkauft, entscheidet über Qualität, Preis und Glaubwürdigkeit gegenüber den Kunden.",
+ mat:[
+ {tag:"M1",head:"Ritter Sport: Eigene Plantage statt nur Zukauf",
+  body:`<ul><li>Seit 2018 bezieht Ritter Sport ausschließlich zertifiziert nachhaltigen Kakao (Rainforest Alliance, Fairtrade).</li><li>In Nicaragua betreibt das Familienunternehmen die eigene Plantage <b>El Cacao</b>: 1.200 Hektar Kakao im Agroforstsystem, aus der 20 bis 30 % des Kakaobedarfs stammen.</li><li>Zusätzlich investiert Ritter jährlich rund 7 Mio. € in Kakaoprogramme in Westafrika sowie Mittel- und Südamerika.</li><li>In Nicaragua wurden rund 1.100 Farmen kartiert, um die Herkunft nachzuvollziehen. Bei Kakao anderer Herkunft ist Ritter auf lizenzierte Zwischenhändler angewiesen.</li></ul>`,
+  src:[["lebensmittelpraxis.de, 19.01.2024","https://lebensmittelpraxis.de/suesswaren/39185-ritter-sport-kakao-kann-nachhaltig-produziert-werden.html"],["lebensmittelpraxis.de, 10.04.2023","https://lebensmittelpraxis.de/suesswaren/36664-nachhaltige-lieferkette-ritter-will-gruener-werden.html"],["yumda.com, 29.01.2018","https://www.yumda.com/de/news/1153132/100-prozent-nachhaltig-ritter-sport-bezieht-ab-sofort-ausschliesslich-zertifiziert-nachhaltigen-kakao.html"]]},
+ {tag:"M2",head:"Rekordpreis, Absturz – und trotzdem teure Schokolade",
+  body:`<p>2024 stieg der Kakaopreis um 166 % auf rund 11.230 US-Dollar je Tonne. Ursachen waren Dürren, Starkregen und Pflanzenkrankheiten in Ghana und der Elfenbeinküste sowie Spekulation an den Terminbörsen. Seit 2025 fällt der Preis wieder deutlich; im September 2026 lag der Referenzpreis bei rund 5.650 US-Dollar je Tonne.</p><p>Im Januar 2026 war Schokolade für Verbraucher trotzdem 21 % teurer als ein Jahr zuvor. Lindt erklärte, die Preise nicht senken zu können, weil Kakao langfristig eingekauft werde. Ein österreichischer Hersteller ist nach eigenen Angaben bis Ende 2026 an teure Verträge gebunden. Mondelez hatte bei mehreren Milka-Sorten den Packungsinhalt verkleinert. Der Handel senkte dagegen Anfang 2026 die Preise vieler Eigenmarken, etwa Vollmilchschokolade auf 89 Cent.</p>`,
+  src:[["finanztrends.de","https://www.finanztrends.de/rohstoff/kakao/news/kakaopreis-macht-kehrtwende-hintergruende/"],["dpa-AFX via extraetf.com, 04.02.2026","https://extraetf.com/de/news/dpa-afx/mehr-kakao-geerntet-schokolade-wird-teilweise-gunstiger--1770182650-00838-1770182649931"],["ms-aktuell.de, Sept. 2026","https://ms-aktuell.de/?p=161582"],["vol.at","https://www.vol.at/schokohasen-schock-preise-steigen-trotz-kakao-crash/10082315"]]}],
+ tasks:[
+ {id:"D1",type:"mc",afb:"I",prompt:"Ritter Sport baut einen Teil seines Kakaos auf der eigenen Plantage an. Wie bezeichnet man diese Beschaffungsentscheidung?",
+  opts:["Outsourcing","Single Sourcing","Rückwärtsintegration (Eigenfertigung statt Fremdbezug)","Just-in-time-Belieferung"],a:2,
+  expl:"Das Unternehmen übernimmt eine vorgelagerte Stufe der Wertschöpfungskette selbst. Man spricht von Rückwärtsintegration bzw. einer Make-or-Buy-Entscheidung zugunsten von „Make“."},
+ {id:"D2",type:"multi",afb:"II",pts:2,prompt:"Welche Vorteile bringt der Direktbezug bzw. die eigene Plantage im Hinblick auf <b>Kundeninteressen</b>? Markiere alle zutreffenden.",
+  opts:["Ritter kann die Qualität schon in den ersten Verarbeitungsschritten beeinflussen.","Die Plantage schützt vollständig vor Ernteausfällen durch Dürre.","Die Herkunft lässt sich bis zur einzelnen Farm zurückverfolgen.","Ritter zahlt dadurch immer den niedrigsten Einkaufspreis am Markt.","Ein Nachweis „entwaldungsfrei“ ist glaubwürdiger zu erbringen."],a:[0,2,4],
+  expl:"Eigenanbau schafft Transparenz und Qualitätskontrolle. Wetterrisiken bleiben aber, und eigener, nachhaltiger Anbau ist meist teurer als der günstigste Zukauf."},
+ {id:"D3",type:"mc",afb:"II",prompt:"Erkläre mithilfe von M2: Warum senkte Lindt Anfang 2026 die Preise nicht, obwohl der Börsenpreis gefallen war?",
+  opts:["Weil die EU Mindestpreise für Schokolade vorschreibt","Weil Lindt keinen Kakao, sondern nur Kakaobutter verarbeitet","Weil Kunden höhere Preise ausdrücklich gefordert hatten","Weil der Kakao über langfristige Verträge zu früher vereinbarten, höheren Preisen eingekauft worden war"],a:3,
+  expl:"Hersteller sichern sich Rohstoffe oft Monate im Voraus über Terminverträge. Fallende Börsenpreise kommen deshalb erst verzögert in den Kosten an."},
+ {id:"D4",type:"mc",afb:"III",pts:2,prompt:"Beurteile die Beschaffung über langfristige Lieferverträge mit festen Preisen.",
+  opts:["Sie schafft Planungssicherheit und schützt vor Preisspitzen, kann aber dazu führen, dass fallende Marktpreise erst verzögert an Kunden weitergegeben werden, was Kunden als unfair empfinden können.","Sie ist immer nachteilig, weil man nie vom aktuellen Marktpreis profitiert.","Sie ist immer vorteilhaft, weil sie den Einkaufspreis dauerhaft senkt.","Sie spielt für Kunden keine Rolle, weil Endverbraucherpreise unabhängig vom Einkauf sind."],a:0,
+  expl:"Eine gute Beurteilung nennt Vor- und Nachteile und bezieht die Kundensicht ein. Das zeigt sich etwa an der Empörung über teure Schokohasen zu Ostern 2026."},
+ {id:"D5",type:"tf",afb:"II",prompt:"Richtig oder falsch?",labels:["richtig","falsch"],
+  items:[
+   {t:"Shrinkflation (weniger Inhalt zum gleichen Preis) kann kurzfristig die Marge sichern, gefährdet aber das Vertrauen der Kunden.",a:0},
+   {t:"„Zertifiziert nachhaltiger Kakao“ bedeutet, dass der Kakao von der eigenen Plantage des Herstellers stammt.",a:1,why:"Zertifiziert heißt: Ein unabhängiger Standard (z. B. Fairtrade) wurde eingehalten, egal wer anbaut."},
+   {t:"Die Ernteausfälle 2024 betrafen vor allem Ghana und die Elfenbeinküste.",a:0},
+   {t:"Der Preisanstieg 2024 lässt sich allein durch das Wetter erklären.",a:1,why:"Laut M2 trieb auch Spekulation an den Terminbörsen den Preis."}]}
+ ]},
+/* ---------------- STATION E ---------------- */
+{id:"E", ch:"1.4", title:"Make or Buy und Arten des Fremdbezugs", recapTitle:"Arten des Fremdbezugs",
+ lead:"Selbst herstellen oder einkaufen? Und wenn eingekauft wird: einzeln, auf Vorrat oder genau im Takt der Produktion? Diese Entscheidungen bestimmen Kosten, Lieferfähigkeit und am Ende, ob der Kunde sein Produkt pünktlich bekommt.",
+ recap:`<ul><li><b>Einzelbeschaffung</b>: Bestellung erst bei Bedarf, auftragsbezogen.</li><li><b>Vorratsbeschaffung</b>: große Stückzahl bestellen und lagern.</li><li><b>Just-in-time / Just-in-sequence</b>: bedarfssynchrone Anlieferung der Ware.</li></ul>`,
+ mat:[{tag:"M1",head:"Chipkrise 2025: Wenn ein Zulieferer ausfällt",
+  body:`<p>Im Oktober 2025 übernahm die niederländische Regierung die Kontrolle über den Chiphersteller Nexperia mit Sitz in Nijmegen. China antwortete mit einem Exportstopp für bestimmte Chips, die zu großen Teilen dort gefertigt werden. Die Bauteile stecken in Steuer- und Sicherheitssystemen von Autos.</p><p>Volkswagen versuchte zunächst, mit eigenen Lagerbeständen weiterzuproduzieren. Ende Oktober drohte trotzdem ein Stopp der Golf- und Tiguan-Produktion in Wolfsburg, weitere Werke galten als gefährdet. Alternative Lieferanten fehlten kurzfristig, weil Ersatzchips erst getestet und zertifiziert werden müssen. Bei mehreren Autozulieferern kam es wegen des Chipmangels zu Kurzarbeit.</p>`,
+  src:[["auto-motor-und-sport.de","https://www.auto-motor-und-sport.de/verkehr/chip-krise-vw-setzt-produktion-fuer-golf-und-tiguan-aus/"],["boersen-zeitung.de","https://www.boersen-zeitung.de/unternehmen-branchen/chip-mangel-fuehrt-zu-kurzarbeit-in-der-autoindustrie"],["bluewin.ch","https://www.bluewin.ch/en/news/despite-chip-crisis-vw-continues-production-for-the-time-being-2931566.html"]]}],
+ tasks:[
+ {id:"E1",type:"assign",afb:"I",prompt:"Welche Art des Fremdbezugs passt am besten zur jeweiligen Situation?",
+  cats:["Einzelbeschaffung","Vorratsbeschaffung","Just-in-time / -sequence"],
+  items:[
+   {t:"Ein Sondermaschinenbauer braucht ein spezielles Getriebe für einen einzigen Kundenauftrag.",a:0},
+   {t:"Ein Autowerk erhält die Sitze in genau der Reihenfolge, in der die Fahrzeuge über das Band laufen.",a:2},
+   {t:"Eine Druckerei kauft Standardpapier palettenweise und nutzt den Mengenrabatt.",a:1},
+   {t:"Eine Großbäckerei bekommt Frischmilch täglich passend zur Tagesproduktion geliefert.",a:2,why:"Lebensmittelproduktion ist ein typisches Einsatzfeld: Verderbliche Ware soll nicht lange lagern."},
+   {t:"Eine Schreinerei bestellt seltenes Edelholz für einen Einzelauftrag.",a:0},
+   {t:"Ein Schraubenhersteller benötigt in der Massenproduktion täglich große Mengen Stahldraht.",a:1}],
+  expl:"Faustregel aus dem Hefteintrag: Einzelbeschaffung für Spezial- und Einzelanfertigungen, Vorratsbeschaffung für häufig benötigte Teile in der Massenproduktion, Just-in-time für Massenproduktion mit vielen Varianten und für Lebensmittel."},
+ {id:"E2",type:"tf",afb:"I",prompt:"Richtig oder falsch?",labels:["richtig","falsch"],
+  items:[
+   {t:"Vorratsbeschaffung bindet viel Kapital.",a:0},
+   {t:"Bei der Einzelbeschaffung ist das Lagerrisiko besonders hoch.",a:1,why:"Es wird nur bestellt, was gebraucht wird; es gibt kaum Lager und daher kein Lagerrisiko."},
+   {t:"Just-in-time macht ein Unternehmen unabhängiger von seinen Zulieferern.",a:1,why:"Das Gegenteil trifft zu: Just-in-time schafft eine große Abhängigkeit von Zulieferern."},
+   {t:"Vorratsbeschaffung kann durch Mengenrabatte und gebündelten Versand günstiger sein.",a:0},
+   {t:"Einzelbeschaffung kann bei Lieferengpässen zu Wartezeiten führen.",a:0}]},
+ {id:"E3",type:"mc",afb:"II",prompt:"Worin unterscheidet sich <b>Just-in-sequence</b> von Just-in-time, und warum passt es besonders zur Autoproduktion?",
+  opts:["Just-in-sequence bedeutet, dass Ware auf Vorrat in der richtigen Reihenfolge eingelagert wird; das senkt in der Autoproduktion die Lagerkosten.","Just-in-sequence ist nur ein anderer Name für Just-in-time.","Teile kommen nicht nur zur richtigen Zeit, sondern auch in der Reihenfolge der Produktion an. Das passt zu Autos, weil Kunden viele Varianten konfigurieren und nicht jede Variante gelagert werden kann.","Just-in-sequence bedeutet, dass der Kunde sein Auto in der Reihenfolge der Bestellungen erhält."],a:2,
+  expl:"Bei Just-in-sequence liefert z. B. der Sitzhersteller genau den Sitz, den das nächste Auto am Band braucht (Farbe, Bezug, Ausstattung). So lassen sich viele Kundenwünsche erfüllen, ohne alle Varianten auf Lager zu halten."},
+ {id:"E4",type:"mc",afb:"II",prompt:"Ein Fahrradhersteller überlegt, ob er die Rahmen selbst schweißt (Make) oder zukauft (Buy). Welches Argument spricht für <b>Buy</b>?",
+  opts:["Die Rahmenkonstruktion ist das Kern-Know-how der Marke und soll nicht nach außen gelangen.","Ein spezialisierter Zulieferer fertigt in großen Stückzahlen und kann die Rahmen dadurch günstiger herstellen.","Die eigene Halle und die Schweißroboter sind derzeit nicht ausgelastet.","Der Hersteller will unabhängig von Lieferengpässen bleiben."],a:1,
+  expl:"Die anderen drei Aussagen sind typische Argumente für Eigenfertigung: Schutz von Know-how, Nutzung freier Kapazitäten und Unabhängigkeit von Lieferanten."},
+ {id:"E5",type:"multi",afb:"III",pts:2,prompt:"Beurteile mithilfe von M1, welche Schlussfolgerungen ein Autohersteller aus der Chipkrise ziehen sollte. Markiere alle begründeten.",
+  opts:["Just-in-time macht die Produktion anfällig für externe Störungen wie Exportstopps.","Just-in-time sollte vollständig abgeschafft werden, weil es immer nachteilig ist.","Für kritische Bauteile ist ein Sicherheitsbestand auf Vorrat sinnvoll, auch wenn er Kapital bindet.","Mehrere freigegebene Lieferanten aus verschiedenen Ländern verringern die Abhängigkeit.","Lagerkosten spielen keine Rolle, wenn die Produktion stillsteht."],a:[0,2,3],
+  expl:"Eine gute Beurteilung wägt ab: Just-in-time spart Kapital und Lagerkosten, ist aber riskant. Viele Unternehmen kombinieren deshalb Just-in-time mit Sicherheitsbeständen für kritische Teile und mehreren Lieferanten. Für den Kunden zählt am Ende, dass sein Auto pünktlich geliefert wird."}
+ ]},
+];
+
+/* ---------------- Engine ---------------- */
+const KEY="lerncheck-13-14-v2";
+let st={};
+try{st=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){st={}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+const chColor=c=>c.startsWith("1.3+")?"var(--ink)":(c==="1.3"?"var(--c13)":c==="1.4"?"var(--c14)":"var(--ink)");
+function maxPts(t){switch(t.type){case"assign":case"tf":return t.items.length;case"shortlong":return t.items.length*2;case"mc":return t.pts||1;case"multi":return t.pts||2;case"open":return t.criteria.length}}
+function ensure(t){if(!st[t.id]){let sel;switch(t.type){case"assign":case"tf":sel=t.items.map(()=>-1);break;case"shortlong":sel=t.items.map(()=>[-1,-1]);break;case"mc":sel=-1;break;case"multi":sel=t.opts.map(()=>false);break;case"open":sel={text:"",open:false,crit:t.criteria.map(()=>false)}}st[t.id]={sel,done:false,score:0}}return st[t.id]}
+function complete(t,s){switch(t.type){case"assign":case"tf":return s.sel.every(v=>v>=0);case"shortlong":return s.sel.every(p=>p[0]>=0&&p[1]>=0);case"mc":return s.sel>=0;case"multi":return s.sel.some(Boolean);case"open":return s.sel.open}}
+function scoreOf(t,s){const x=s.sel;switch(t.type){case"assign":case"tf":return t.items.reduce((n,it,i)=>n+(x[i]===it.a?1:0),0);case"shortlong":return t.items.reduce((n,it,i)=>n+(x[i][0]===it.k?1:0)+(x[i][1]===it.l?1:0),0);case"mc":return x===t.a?(t.pts||1):0;case"multi":{let h=0,w=0;x.forEach((v,i)=>{if(v){t.a.includes(i)?h++:w++}});return Math.max(0,Math.round((t.pts||2)*(h-w)/t.a.length))}case"open":return x.crit.filter(Boolean).length}}
+const allTasks=()=>S.flatMap(s=>s.tasks.map(t=>({t,s})));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function totals(){const r={"1.3":{e:0,m:0,am:0},"1.4":{e:0,m:0,am:0},all:{e:0,m:0,am:0,done:0,n:0}};
+  allTasks().forEach(({t,s})=>{const m=maxPts(t),x=st[t.id],d=x&&x.done;const keys=s.ch==="1.3"?["1.3"]:s.ch==="1.4"?["1.4"]:["1.3","1.4"];
+    const share=1/keys.length;keys.forEach(k=>{r[k].m+=m*share;if(d){r[k].e+=x.score*share;r[k].am+=m*share}});
+    r.all.m+=m;r.all.n++;if(d){r.all.e+=x.score;r.all.am+=m;r.all.done++}});return r}
+function stationStat(s){let e=0,m=0,d=0;s.tasks.forEach(t=>{m+=maxPts(t);const x=st[t.id];if(x&&x.done){e+=x.score;d++}});return{e,m,d,n:s.tasks.length}}
+const fmt=n=>(Math.round(n*10)/10).toString().replace(".",",");
+
+function renderHeader(){const r=totals();
+  document.getElementById("totNum").innerHTML=`${fmt(r.all.e)} <small>/ ${r.all.m} Punkte</small>`;
+  const bars=document.querySelectorAll("#totBar i");bars[0].style.width=(r["1.3"].e/r.all.m*100)+"%";bars[1].style.width=(r["1.4"].e/r.all.m*100)+"%";
+  document.getElementById("totDone").textContent=`${r.all.done} von ${r.all.n} Aufgaben erledigt`;
+  renderNav()}
+let cur="A";
+function renderNav(){const ul=document.getElementById("nav");ul.innerHTML="";
+  [...S,{id:"auswertung",ch:"",title:"Auswertung"}].forEach(s=>{const li=document.createElement("li");
+    let stat="";let done=false;if(s.tasks){const x=stationStat(s);stat=`${fmt(x.e)}/${x.m} P. · ${x.d}/${x.n} erledigt`;done=x.d===x.n}else{stat="Lernstand je Kapitel"}
+    li.innerHTML=`<button class="navbtn${done?" done":""}" style="--ch:${s.tasks?chColor(s.ch):"var(--muted)"}" aria-current="${cur===s.id}" data-go="${s.id}"><span class="lt">${s.tasks?s.id:"✓"}</span><span class="nm">${s.title}</span><span class="st">${s.tasks?"Kap. "+s.ch+" · ":""}${stat}</span></button>`;ul.appendChild(li)})}
+document.getElementById("nav").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(b.dataset.go)});
+function go(id,scroll=true){cur=id;try{history.replaceState(null,"","#"+id)}catch(e){}renderMain();renderNav();if(scroll)document.getElementById("main").scrollIntoView({behavior:"smooth",block:"start"})}
+
+function renderMain(){const m=document.getElementById("main");m.innerHTML="";
+  if(cur==="auswertung"){m.appendChild(renderResults());return}
+  const s=S.find(x=>x.id===cur)||S[0];
+  const sh=document.createElement("section");sh.className="sheet";sh.style.setProperty("--ch",chColor(s.ch));
+  sh.innerHTML=`<div class="sheet-head"><div class="chap">STATION ${s.id} · KAPITEL ${s.ch}</div><h2>${s.title}</h2><p class="lead">${s.lead}</p></div>`;
+  if(s.recap){const d=document.createElement("details");d.className="recap";d.innerHTML=`<summary>Kurz erinnert: ${s.recapTitle||"Zielbeziehungen"}</summary>${s.recap}`;sh.appendChild(d)}
+  s.mat.forEach(mt=>{const d=document.createElement("div");d.className="material";
+    d.innerHTML=`<div class="mh"><span class="mtag">[${mt.tag}]</span><h3>${mt.head}</h3></div>${mt.body}${mt.src.length?`<div class="src">Quellen: ${mt.src.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join(" · ")} (aufgerufen am 11.10.26)</div>`:""}`;sh.appendChild(d)});
+  s.tasks.forEach(t=>sh.appendChild(renderTask(t)));
+  const idx=S.indexOf(s);const foot=document.createElement("div");foot.className="station-foot";
+  const x=stationStat(s);
+  foot.innerHTML=`<span class="kicker">Station ${s.id}: ${fmt(x.e)} von ${x.m} Punkten</span><div class="actions"><button class="btn ghost" data-reset="${s.id}">Station zurücksetzen</button>${idx<S.length-1?`<button class="btn" data-go="${S[idx+1].id}">Weiter zu Station ${S[idx+1].id}</button>`:`<button class="btn" data-go="auswertung">Zur Auswertung</button>`}</div>`;
+  sh.appendChild(foot);m.appendChild(sh)}
+document.getElementById("main").addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){go(g.dataset.go);return}
+  const r=e.target.closest("[data-reset]");if(r){const s=S.find(x=>x.id===r.dataset.reset);s.tasks.forEach(t=>delete st[t.id]);save();renderMain();renderHeader()}});
+
+function renderTask(t){const s=ensure(t);const art=document.createElement("article");art.className="task"+(s.done?" solved":"");art.id="t-"+t.id;
+  const mp=maxPts(t);
+  art.innerHTML=`<div class="thead"><span class="tno">${t.id}</span><span class="aa">${t.type==="open"?"Fallstudie:":"Arbeitsauftrag:"}</span><span class="chip${t.afb==="III"?" afb3":""}">AFB ${t.afb}</span><span class="pts">${s.done?fmt(s.score)+" / ":""}${mp} P.</span></div><p class="prompt">${t.prompt}</p>`;
+  const body=document.createElement("div");art.appendChild(body);
+  const D=s.done;
+  if(t.type==="assign"||t.type==="shortlong"){body.className="rows";
+    t.items.forEach((it,i)=>{const row=document.createElement("div");
+      if(t.type==="assign"){row.className="row r2";const ok=D&&s.sel[i]===it.a;if(D)row.classList.add(ok?"ok":"no");
+        row.innerHTML=`<div class="it">${it.t}</div><select id="${t.id}-s${i}" aria-label="Kategorie" ${D?"disabled":""}><option value="-1">– wählen –</option>${t.cats.map((c,j)=>`<option value="${j}" ${s.sel[i]===j?"selected":""}>${c}</option>`).join("")}</select>${D&&(!ok||it.why)?`<div class="why">${!ok?`Richtig: <b class="c">${t.cats[it.a]}</b>. `:""}${it.why||""}</div>`:""}`;
+        row.querySelector("select").addEventListener("change",e=>{s.sel[i]=+e.target.value;save()})}
+      else{row.className="row r3";const ok=D&&s.sel[i][0]===it.k&&s.sel[i][1]===it.l;if(D)row.classList.add(ok?"ok":"no");
+        const sel=(p,lab)=>`<label class="sl">${lab}<select id="${t.id}-s${i}-${p}" ${D?"disabled":""}><option value="-1">– wählen –</option>${t.opts.map((c,j)=>`<option value="${j}" ${s.sel[i][p]===j?"selected":""}>${c}</option>`).join("")}</select></label>`;
+        row.innerHTML=`<div class="it">${it.t}</div>${sel(0,"kurzfristig")}${sel(1,"langfristig")}${D?`<div class="why">${ok?"":`Richtig: <b class="c">kurzfristig ${t.opts[it.k]}, langfristig ${t.opts[it.l]}</b>. `}${it.why||""}</div>`:""}`;
+        row.querySelectorAll("select").forEach((se,p)=>se.addEventListener("change",e=>{s.sel[i][p]=+e.target.value;save()}))}
+      body.appendChild(row)})}
+  else if(t.type==="mc"||t.type==="multi"){body.className="opts";const multi=t.type==="multi";
+    t.opts.forEach((o,i)=>{const b=document.createElement("button");b.type="button";b.className="opt "+(multi?"multi":"radio");
+      const on=multi?s.sel[i]:s.sel===i;b.setAttribute("aria-pressed",on);
+      if(D){b.disabled=true;const right=multi?t.a.includes(i):t.a===i;if(on&&right)b.classList.add("is-right");else if(on&&!right)b.classList.add("is-wrong");else if(right)b.classList.add("is-missed")}
+      b.innerHTML=`<span class="box" aria-hidden="true"></span><span>${o}</span>`;
+      b.addEventListener("click",()=>{if(s.done)return;if(multi){s.sel[i]=!s.sel[i];b.setAttribute("aria-pressed",s.sel[i])}else{s.sel=i;body.querySelectorAll(".opt").forEach((x,j)=>x.setAttribute("aria-pressed",j===i))}save()});
+      body.appendChild(b)})}
+  else if(t.type==="tf"){body.className="rows";
+    t.items.forEach((it,i)=>{const row=document.createElement("div");row.className="row r2";const ok=D&&s.sel[i]===it.a;if(D)row.classList.add(ok?"ok":"no");
+      row.innerHTML=`<div class="it">${it.t}</div><div class="seg" role="group">${t.labels.map((l,j)=>`<button type="button" class="segb" aria-pressed="${s.sel[i]===j}" data-j="${j}" ${D?"disabled":""}>${l}</button>`).join("")}</div>${D&&(!ok||it.why)?`<div class="why">${!ok?`Richtig: <b class="c">${t.labels[it.a]}</b>. `:""}${it.why||""}</div>`:""}`;
+      row.querySelectorAll(".segb").forEach(b=>b.addEventListener("click",()=>{if(s.done)return;s.sel[i]=+b.dataset.j;row.querySelectorAll(".segb").forEach(x=>x.setAttribute("aria-pressed",x===b));save()}));
+      body.appendChild(row)})}
+  else if(t.type==="open"){body.style.display="grid";body.style.gap="12px";
+    body.innerHTML=`<textarea id="${t.id}-text" placeholder="Schreibe hier deine Lösung in ganzen Sätzen …" ${D?"readonly":""}>${esc(s.sel.text)}</textarea>`;
+    body.querySelector("textarea").addEventListener("input",e=>{s.sel.text=e.target.value;save()});
+    if(s.sel.open){const md=document.createElement("div");md.className="model";md.innerHTML=t.model+`<h4>Selbsteinschätzung: Was hast du erfüllt?</h4><div class="crit">${t.criteria.map((c,j)=>`<label><input type="checkbox" id="${t.id}-c${j}" ${s.sel.crit[j]?"checked":""} ${D?"disabled":""}><span>${c}</span></label>`).join("")}</div>`;
+      md.querySelectorAll("input").forEach((cb,j)=>cb.addEventListener("change",()=>{s.sel.crit[j]=cb.checked;save()}));body.appendChild(md)}}
+
+  const act=document.createElement("div");act.className="actions";art.appendChild(act);
+  if(!D){
+    if(t.type==="open"&&!s.sel.open){act.innerHTML=`<button class="btn" data-k="reveal">Erwartungshorizont zeigen</button><span class="hint" hidden>Schreibe zuerst mindestens ein paar Sätze.</span>`;
+      act.querySelector("button").addEventListener("click",()=>{if((s.sel.text||"").trim().length<80){act.querySelector(".hint").hidden=false;return}s.sel.open=true;save();art.replaceWith(renderTask(t))})}
+    else{act.innerHTML=`<button class="btn">${t.type==="open"?"Selbsteinschätzung werten":"Prüfen"}</button><span class="hint" hidden>Bitte beantworte zuerst alle Teile.</span>`;
+      act.querySelector("button").addEventListener("click",()=>{if(!complete(t,s)){act.querySelector(".hint").hidden=false;return}s.score=scoreOf(t,s);s.done=true;save();art.replaceWith(renderTask(t));renderHeader();updateFoot()})}}
+  else{const r=s.score/mp;const fb=document.createElement("div");fb.className="feedback "+(r>=.99?"good":r>=.5?"mid":"low");
+    const v=t.type==="open"?`${s.score} von ${mp} Kriterien erfüllt.`:(r>=.99?"Alles richtig.":r>=.5?"Teilweise richtig.":"Das sitzt noch nicht.");
+    fb.innerHTML=`<span class="verdict">${v}</span>${t.expl?`<span>${t.expl}</span>`:""}`;art.insertBefore(fb,act);
+    act.innerHTML=`<button class="btn ghost">Aufgabe wiederholen</button>`;act.querySelector("button").addEventListener("click",()=>{delete st[t.id];save();art.replaceWith(renderTask(t));renderHeader();updateFoot()})}
+  return art}
+function updateFoot(){const s=S.find(x=>x.id===cur);if(!s)return;const k=document.querySelector(".station-foot .kicker");if(k){const x=stationStat(s);k.textContent=`Station ${s.id}: ${fmt(x.e)} von ${x.m} Punkten`}}
+
+function level(p){if(p>=.85)return["Sicher","Du kannst Fälle selbstständig analysieren und begründet beurteilen."];if(p>=.6)return["Solide","Die Grundlagen sitzen. Wiederhole gezielt die Aufgaben mit Fehlern, vor allem AFB III."];if(p>=.35)return["Lückenhaft","Arbeite Hefteintrag und Buchkapitel nochmals durch und wiederhole die Stationen."];return["Noch am Anfang","Beginne mit den Grundbegriffen (Stationen A und D) und arbeite dich dann zu den Fällen vor."]}
+function renderResults(){const r=totals();const sh=document.createElement("section");sh.className="sheet";
+  const card=(k,name,col)=>{const x=r[k];const p=x.am?x.e/x.am:0;const[l,txt]=x.am?level(p):["Noch offen","Bearbeite die Stationen dieses Kapitels, dann erscheint hier dein Lernstand."];
+    return `<div class="res" style="--ch:${col}"><div class="chap">KAPITEL ${k}</div><h3 style="margin:0;font-family:var(--f-display)">${name}</h3><div class="big">${x.am?Math.round(p*100)+" %":"–"}</div><div class="bar"><i style="width:${x.m?x.e/x.m*100:0}%;background:${col}"></i></div><div class="kicker">${fmt(x.e)} von ${fmt(x.am)} bearbeiteten Punkten · insgesamt ${fmt(x.m)} möglich</div><div><span class="lvl">${l}.</span> ${txt}</div></div>`};
+  const rows=S.map(s=>{const x=stationStat(s);const wrong=s.tasks.filter(t=>st[t.id]&&st[t.id].done&&st[t.id].score<maxPts(t)).map(t=>t.id);
+    return `<tr><td><b>${s.id}</b> ${s.title}</td><td class="n">${s.ch}</td><td class="n">${fmt(x.e)} / ${x.m}</td><td>${x.d<x.n?`${x.n-x.d} offen`:""}${wrong.length?`${x.d<x.n?"; ":""}wiederholen: ${wrong.join(", ")}`:(x.d===x.n?"vollständig richtig":"")}</td></tr>`}).join("");
+  const srcs=[];S.forEach(s=>s.mat.forEach(m=>m.src.forEach(([t,u])=>{if(!srcs.some(x=>x[1]===u))srcs.push([t,u])})));
+  sh.innerHTML=`<div class="sheet-head"><div class="chap" style="--ch:var(--muted)">AUSWERTUNG</div><h2>Dein Lernstand</h2><p class="lead">Die Prozentwerte beziehen sich auf die Aufgaben, die du bereits bearbeitet hast.</p></div>
+  <div class="res-grid">${card("1.3","Langfristige Unternehmensstrategien","var(--c13)")}${card("1.4","Kundeninteressen in der Beschaffung","var(--c14)")}</div>
+  <div class="tablewrap"><table><thead><tr><th>Station</th><th>Kap.</th><th>Punkte</th><th>Hinweis</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="confirm" id="resetBox"><button class="btn ghost" id="resetAll">Alle Ergebnisse löschen</button></div>
+  <div><div class="kicker" style="margin-bottom:6px">Alle Quellen (aufgerufen am 11.10.26)</div><div class="srcs">${srcs.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join("")}</div></div>`;
+  sh.querySelector("#resetAll").addEventListener("click",()=>{const box=sh.querySelector("#resetBox");box.innerHTML=`<span>Wirklich alle Antworten löschen?</span><button class="btn" id="yes">Ja, löschen</button><button class="btn ghost" id="no">Abbrechen</button>`;
+    box.querySelector("#yes").addEventListener("click",()=>{st={};save();renderHeader();go("A")});box.querySelector("#no").addEventListener("click",()=>go("auswertung",false))});
+  return sh}
+
+const h=(location.hash||"").slice(1);if([...S.map(s=>s.id),"auswertung"].includes(h))cur=h;
+renderHeader();renderMain();
+</script>
+
+</body>
+</html>
